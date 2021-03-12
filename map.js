@@ -9,13 +9,15 @@ import {
 import mapStyle from "./GoogleMapStyle";
 
 const mapStyles = {
-  width: "90%",
+  display: "flex",
+  flexDirection: "row",
+  width: "100%",
   height: "50vh",
   maxHeight: "50vh",
   minWidth: "50vw",
   minHeight: "40vh",
   position: "static !important",
-  margin: "0 auto 0 auto",
+  margin: "none",
 };
 
 function MyDirectionsRenderer(props) {
@@ -73,12 +75,21 @@ const MapContainer = (props) => {
     return [lat, long];
   };
   useEffect(() => {
-    setInitCenter({
-      lat: handleLoc(props.runLoc)[0],
-      lng: handleLoc(props.runLoc)[1],
-    });
-  }, [props.runLoc]);
+    setRunLat(handleLoc(props.runLoc)[0]);
+    setRunLng(handleLoc(props.runLoc)[1]);
+    setDropLat(handleLoc(props.dropLoc)[0]);
+    setDropLng(handleLoc(props.dropLoc)[1]);
+  }, [props.runLoc, props.dropLoc]);
   console.log("init CENTER", initCenter);
+
+  var points = [
+    { lat: runLat, lng: runLng },
+    { lat: dropLat, lng: dropLng },
+  ];
+  var bounds = new google.maps.LatLngBounds();
+  for (var i = 0; i < points.length; i++) {
+    bounds.extend(points[i]);
+  }
 
   return (
     <Map
@@ -87,31 +98,47 @@ const MapContainer = (props) => {
       styles={props.mapStyle}
       disableDefaultUI={true}
       style={mapStyles}
-      center={initCenter}
+      scrollwheel={false}
+      gestureHandling={"none"}
+      bounds={bounds}
+      initialCenter={initCenter}
     >
       <Marker
-        title={"Runner"}
-        name={"Runner"}
+        label={{
+          text: "Our G-Runner",
+          style: { backgroundColor: "white" },
+          className: "labels",
+        }}
+        title={"Our G-Runner"}
+        name={"Our G-Runner"}
         icon={{
           url: "./public/assets/PinBlue.png",
           anchor: new google.maps.Point(17, 46),
           scaledSize: new google.maps.Size(30, 40),
+          labelOrigin: new google.maps.Point(10, -12),
         }}
         position={{
           lat: handleLoc(props.runLoc)[0],
           lng: handleLoc(props.runLoc)[1],
         }}
-      />
-      <InfoWindow visible={true}>
-        <div>
-          <h4>Runner</h4>
-        </div>
-      </InfoWindow>
+      >
+        <InfoWindow visible={true}>
+          <div>Runner</div>
+        </InfoWindow>
+      </Marker>
       <Marker
+        label={{
+          text: "Your Delivery Location",
+          style: { backgroundColor: "white" },
+          className: "labels",
+        }}
+        title={"Your Delivery Location"}
+        name={"Your Delivery Location"}
         icon={{
           url: "./public/assets/PinGold.png",
           anchor: new google.maps.Point(17, 46),
           scaledSize: new google.maps.Size(28, 37),
+          labelOrigin: new google.maps.Point(10, -12),
         }}
         position={{
           lat: handleLoc(props.dropLoc)[0],
